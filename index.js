@@ -18,7 +18,7 @@ const getColor = (str) => {
 let isClicked = false;
 let lockX;
 let lockY;
-
+let lockHex;
 const mouseClickAndBack = () => {
   const mouse = robot.getMousePos();
   robot.moveMouse(lockX, lockY);
@@ -38,17 +38,21 @@ const initColor = setInterval(() => {
   console.log(`isGreen: ${isGreen}`);
 }, 100);
 
+const getColorByPosition = () => {
+  const mouse = robot.getMousePos();
+  var hex = robot.getPixelColor(lockX || mouse.x, lockY || mouse.y);
+  const { isRed, isGreen, red, green, blue } = getColor(hex);
+
+  return { isRed, isGreen, red, green, blue, hex };
+};
 setTimeout(() => {
   clearInterval(initColor);
   setInterval(function () {
-    // Get mouse position.
-    var mouse = !lockX && !lockY && robot.getMousePos();
-
-    // Get pixel color in hex format.
-    var hex = robot.getPixelColor(lockX || mouse.x, lockY || mouse.y);
-    const { isRed, isGreen, red, green, blue } = getColor(hex);
+    const { isGreen } = getColorByPosition();
     if (isGreen && !isClicked) {
       if (!lockX || !lockY) {
+        lockHex = getColorByPosition();
+        var mouse = !lockX && !lockY && robot.getMousePos();
         lockX = mouse.x;
         lockY = mouse.y;
         console.log({ lockX, lockY });
@@ -56,9 +60,19 @@ setTimeout(() => {
 
       isClicked = true;
       mouseClickAndBack();
+      const checkSecondClick = setInterval(() => {
+        const { hex } = getColorByPosition();
+        if (lockHex === hex) {
+          mouseClickAndBack();
+          isClicked = false;
+          clearInterval(checkSecondClick);
+        }
+      }, 200);
       setTimeout(() => {
-        mouseClickAndBack();
-        isClicked = false;
+        if (isClicked) {
+          mouseClickAndBack();
+          isClicked = false;
+        }
       }, 5000);
     }
     console.log(`isClicked: ${isClicked}, isGreen: ${isGreen}`);
