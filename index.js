@@ -24,8 +24,11 @@ const mouseClickAndBack = () => {
   robot.moveMouse(lockX, lockY);
   robot.mouseClick();
   robot.mouseClick();
-  robot.moveMouse(mouse.x, mouse.y);
-  robot.mouseClick();
+  setTimeout(() => {
+    robot.moveMouse(mouse.x, mouse.y);
+    robot.mouseClick();
+    robot.mouseClick();
+  }, 50);
 };
 
 console.log(
